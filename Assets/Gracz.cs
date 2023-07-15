@@ -40,6 +40,7 @@ public class Gracz : MonoBehaviour
         // Pobieranie wejœcia od gracza w osiach poziomych i pionowych
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
+        float totalDistance = rb.transform.position.z;
 
         // Obliczanie wektora ruchu na podstawie wejœcia gracza
         Vector3 movement = new Vector3(horizontalInput, 0f, verticalInput);
@@ -134,7 +135,7 @@ public class Gracz : MonoBehaviour
                 gamePoints += 1;
                 script.pointSfrom = 0;
             }
-
+            
             //generowanie dalszej mapy jeœli gracz leci do przodu
             if (totalDistance > (lastScanDistance + 5f) && floatValue > 0)
             {
