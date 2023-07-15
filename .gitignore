@@ -361,3 +361,9 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+#Pliki do wyjebania w chuj
+Library/
+ProjectSettings/
+Temp/
+UserSettings/
