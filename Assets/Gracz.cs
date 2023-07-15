@@ -21,7 +21,7 @@ public class Gracz : MonoBehaviour
     private float totalJumpDistance = 0f; // Ca³kowita d³ugoœæ wszystkich wykonanych skoków
     private float totalSprintTime = 0f; // Ca³kowity czas przebyty w sprincie
     private float totalDistance = 0f; // Ca³kowicie pokonany dystans
-    private float lastScanDistance = 0f;
+    private float lastScanDistance = -999f;
     private float gamePoints = 0f;
     private Vector3 currentVelocity; // Aktualna prêdkoœæ gracza
     private Rigidbody rb;
@@ -40,7 +40,34 @@ public class Gracz : MonoBehaviour
         // Pobieranie wejœcia od gracza w osiach poziomych i pionowych
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
-        float totalDistance = rb.transform.position.z;
+
+        if (aktualnaPlatforma) {
+            totalDistance = rb.transform.position.z;
+            float floatValue = aktualnaPlatforma.gameObject.GetComponent<menager>().maxTuch;
+
+            //generowanie dalszej mapy jeœli gracz leci do przodu
+            if (totalDistance > (lastScanDistance + 1) && floatValue > 0)
+            {
+                int rng1 = Random.Range(-16, 16);
+                int rng2 = Random.Range(59, 69);
+                int rng3 = Random.Range(-2, +3);
+
+                // aktualizacja pozycji skanu
+                lastScanDistance = totalDistance;
+
+                // nowy obiekt robimy se
+                GameObject newObject = Instantiate(platforma, transform.position, transform.rotation);
+                Vector3 planePos = aktualnaPlatforma.gameObject.transform.position;
+
+                // nadajemy mu nowe wartosci (jesli bedzie mniej jak 90, dodaj +1)
+                if (planePos.y <= 90) { planePos.y = planePos.y + 1; }
+                newObject.transform.position = new Vector3(planePos.x + rng1, planePos.y + rng3, planePos.z + rng2);
+                newObject.transform.eulerAngles = new Vector3(0f, 0f, 0f);
+
+                menager script = aktualnaPlatforma.gameObject.GetComponent<menager>();
+                script.maxTuch = 0;
+            }
+        }
 
         // Obliczanie wektora ruchu na podstawie wejœcia gracza
         Vector3 movement = new Vector3(horizontalInput, 0f, verticalInput);
@@ -125,7 +152,6 @@ public class Gracz : MonoBehaviour
         // Sprawdzanie, czy gracz dotyka pod³o¿a
         if (collision.gameObject.CompareTag("Ground"))
         {
-            float floatValue = collision.gameObject.GetComponent<menager>().maxTuch;
             float point = collision.gameObject.GetComponent<menager>().pointSfrom;
             menager script = collision.gameObject.GetComponent<menager>();
             GameObject platfromnowe = collision.gameObject;
@@ -135,33 +161,6 @@ public class Gracz : MonoBehaviour
                 gamePoints += 1;
                 script.pointSfrom = 0;
             }
-            
-            //generowanie dalszej mapy jeœli gracz leci do przodu
-            if (totalDistance > (lastScanDistance + 5f) && floatValue > 0)
-            {
-                int rng1 = Random.Range(-16, 16);
-                int rng2 = Random.Range(59, 69);
-                int rng3 = Random.Range(-2, +3);         
-
-                // aktualizacja pozycji skanu
-                lastScanDistance = totalDistance;
-
-                // nowy obiekt robimy se
-                GameObject newObject = Instantiate(platforma, transform.position, transform.rotation);
-                Vector3 planePos = collision.gameObject.transform.position;
-
-                // nadajemy mu nowe wartosci (jesli bedzie mniej jak 90, dodaj +1)
-                if (planePos.y <= 90) { planePos.y = planePos.y + 1; }
-                newObject.transform.position = new Vector3(planePos.x + rng1, planePos.y + rng3, planePos.z + rng2);
-                newObject.transform.eulerAngles = new Vector3(0f, 0f, 0f);
-
-                script.maxTuch = 0;
-            }
-
-            if (floatValue > 0) {
-                totalDistance += 1;
-            }
-
 
             // pozosta³e mechaniki
             isJumping = false;
