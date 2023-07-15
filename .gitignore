@@ -367,3 +367,5 @@ Library/
 ProjectSettings/
 Temp/
 UserSettings/
+*.csproj
+*.sln
