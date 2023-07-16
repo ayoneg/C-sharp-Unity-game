@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class Gracz : MonoBehaviour
@@ -9,8 +10,10 @@ public class Gracz : MonoBehaviour
     public float sprintDuration = 3f; // Czas trwania sprintu (w sekundach)
     public float sprintCooldown = 5f; // Czas odnowienia sprintu (w sekundach)
     public float jumpForce = 5f; // Si³a skoku
-    public float deceleration = 10f; // Wspó³czynnik zwalniania
+    public float deceleration = 4f; // Wspó³czynnik zwalniania
     public GameObject platforma = null; // obiekt platformy
+    public GameObject enemy = null; // obiekt platformy
+    public TextMeshProUGUI textMeshProComponent; // obiekt
 
     private GameObject aktualnaPlatforma = null; // obiekt platformy, aktualnie dobytej
     private bool isJumping = false; // Czy gracz jest w trakcie skoku
@@ -23,6 +26,7 @@ public class Gracz : MonoBehaviour
     private float totalDistance = 0f; // Ca³kowicie pokonany dystans
     private float lastScanDistance = -999f;
     private float gamePoints = 0f;
+    private float currnetGamePoints = 0f;
     private Vector3 currentVelocity; // Aktualna prêdkoœæ gracza
     private Rigidbody rb;
     private Renderer playerRenderer;
@@ -37,8 +41,16 @@ public class Gracz : MonoBehaviour
 
     void Update()
     {
+        if (gamePoints > currnetGamePoints + 5) {
+            currnetGamePoints = gamePoints;
+            movementSpeed = movementSpeed + 1f;
+            sprintSpeed = sprintSpeed + 1f;
+            jumpForce = jumpForce + 1f;
+        }
+
+
         // Pobieranie wejœcia od gracza w osiach poziomych i pionowych
-        float horizontalInput = Input.GetAxis("Horizontal");
+            float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
 
         if (aktualnaPlatforma) {
@@ -67,47 +79,15 @@ public class Gracz : MonoBehaviour
                 // nadajemy mu nowe wartosci (jesli bedzie mniej jak 90, dodaj +1)
                 if (planePos.y <= 90) { planePos.y = planePos.y + 1; }
                 newObject.transform.position = new Vector3(planePos.x + rng1, planePos.y + rng3, planePos.z + rng2);
-
-                if (panelRoot.x > 16)
-                {
-                    panelRoot.x = panelRoot.x - 1;
-                }
-                else if(panelRoot.x < -16) 
-                {
-                    panelRoot.x = panelRoot.x + 1;
-                }
-                else
-                {
-                    panelRoot.x = panelRoot.x + Random.Range(-1, 1);
-                }
-
-                if (panelRoot.y > 16)
-                {
-                    panelRoot.y = panelRoot.y - 1;
-                }
-                else if (panelRoot.y < -16)
-                {
-                    panelRoot.y = panelRoot.y + 1;
-                }
-                else
-                {
-                    panelRoot.y = panelRoot.y + Random.Range(-1, 1);
-                }
-
-                if (panelRoot.z > 16)
-                {
-                    panelRoot.z = panelRoot.z - 1;
-                }
-                else if (panelRoot.z < -10)
-                {
-                    panelRoot.z = panelRoot.z + 1;
-                }
-                else
-                {
-                    panelRoot.z = panelRoot.z + Random.Range(-1, 1);
-                }
-
                 newObject.transform.eulerAngles = new Vector3(panelRoot.x, panelRoot.y, panelRoot.z);
+
+                float dystans = Vector3.Distance(newObject.transform.position, aktualnaPlatforma.gameObject.transform.position);
+                if (dystans >= 10f) {
+
+                    GameObject enemyobject = Instantiate(enemy, transform.position, transform.rotation);
+                    enemyobject.transform.position = new Vector3(planePos.x, planePos.y + (rng3 - 2), planePos.z + (rng2 / 2));
+
+                }
 
                 menager script = aktualnaPlatforma.gameObject.GetComponent<menager>();
                 script.maxTuch = 0;
@@ -204,12 +184,22 @@ public class Gracz : MonoBehaviour
 
             if (point > 0) {
                 gamePoints += 1;
+                textMeshProComponent.SetText("Punkty: " + gamePoints);
                 script.pointSfrom = 0;
             }
 
             // pozosta³e mechaniki
             isJumping = false;
             isDoubleJumpAvailable = false;
+        } else if (collision.gameObject.CompareTag("Enemy")){
+            // tutaj jak gracz napotka enemy
+            float dmg = collision.gameObject.GetComponent<menager>().damage;
+            rb.AddForce(Vector3.back * (dmg*200), ForceMode.Impulse);
+
+
+            //float currentSpeed = isSprinting ? sprintSpeed : movementSpeed;
+            //Vector3 targetVelocity = movement * currentSpeed;
+
         }
     }
 
@@ -224,7 +214,7 @@ public class Gracz : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        // Zwiêkszanie punktacji za pokonany dystans
+        // --
         if (other.CompareTag("Pickup"))
         {
             totalDistance += Vector3.Distance(transform.position, other.transform.position);

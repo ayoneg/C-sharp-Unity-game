@@ -369,3 +369,4 @@ Temp/
 UserSettings/
 *.csproj
 *.sln
+/Assets/TextMesh Pro

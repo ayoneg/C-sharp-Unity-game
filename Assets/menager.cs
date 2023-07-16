@@ -7,4 +7,6 @@ public class menager : MonoBehaviour
     public float maxTuch = 5f;
     public float pointSfrom = 1f;
 
+    public float damage = 0f;
+
 }
