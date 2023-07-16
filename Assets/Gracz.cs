@@ -48,9 +48,13 @@ public class Gracz : MonoBehaviour
             //generowanie dalszej mapy jeœli gracz leci do przodu
             if (totalDistance > (lastScanDistance + 1) && floatValue > 0)
             {
-                int rng1 = Random.Range(-16, 16);
-                int rng2 = Random.Range(59, 69);
-                int rng3 = Random.Range(-2, +3);
+                float liczdaleko = totalDistance / 100;
+                if (liczdaleko <= 0) { liczdaleko = 0; }
+                //Debug.Log(totalDistance + " test: " + liczdaleko);
+
+                float rng1 = Random.Range(-16, 16) + liczdaleko;
+                float rng2 = Random.Range(59, 69);
+                float rng3 = Random.Range(-2, +3);
 
                 // aktualizacja pozycji skanu
                 lastScanDistance = totalDistance;
@@ -58,11 +62,52 @@ public class Gracz : MonoBehaviour
                 // nowy obiekt robimy se
                 GameObject newObject = Instantiate(platforma, transform.position, transform.rotation);
                 Vector3 planePos = aktualnaPlatforma.gameObject.transform.position;
+                Vector3 panelRoot = aktualnaPlatforma.gameObject.transform.eulerAngles;
 
                 // nadajemy mu nowe wartosci (jesli bedzie mniej jak 90, dodaj +1)
                 if (planePos.y <= 90) { planePos.y = planePos.y + 1; }
                 newObject.transform.position = new Vector3(planePos.x + rng1, planePos.y + rng3, planePos.z + rng2);
-                newObject.transform.eulerAngles = new Vector3(0f, 0f, 0f);
+
+                if (panelRoot.x > 16)
+                {
+                    panelRoot.x = panelRoot.x - 1;
+                }
+                else if(panelRoot.x < -16) 
+                {
+                    panelRoot.x = panelRoot.x + 1;
+                }
+                else
+                {
+                    panelRoot.x = panelRoot.x + Random.Range(-1, 1);
+                }
+
+                if (panelRoot.y > 16)
+                {
+                    panelRoot.y = panelRoot.y - 1;
+                }
+                else if (panelRoot.y < -16)
+                {
+                    panelRoot.y = panelRoot.y + 1;
+                }
+                else
+                {
+                    panelRoot.y = panelRoot.y + Random.Range(-1, 1);
+                }
+
+                if (panelRoot.z > 16)
+                {
+                    panelRoot.z = panelRoot.z - 1;
+                }
+                else if (panelRoot.z < -10)
+                {
+                    panelRoot.z = panelRoot.z + 1;
+                }
+                else
+                {
+                    panelRoot.z = panelRoot.z + Random.Range(-1, 1);
+                }
+
+                newObject.transform.eulerAngles = new Vector3(panelRoot.x, panelRoot.y, panelRoot.z);
 
                 menager script = aktualnaPlatforma.gameObject.GetComponent<menager>();
                 script.maxTuch = 0;
